@@ -28,7 +28,7 @@ jobs:
             echo "Ensuring Docker network exists..."
             docker network inspect app-network >/dev/null 2>&1 || docker network create app-network
 
-            echo "Stopping old containers..."
+            echo "Stopping old containers"
             docker stop backend frontend mongo || true
             docker rm backend frontend mongo || true
 
