@@ -28,7 +28,7 @@ const Home = () => {
                             <Subtitle subtitle={'Know Before You Go'}/>
                             <img src={worldImg} alt="" />
                         </div>
-                        <h1>Very True <span className='highlight'>Great</span> </h1>
+                        <h1>Travelling is more fun <span className='highlight'>sometimes</span> </h1>
                         <p>Traveling allows you to immerse yourself in new cultures, explore breathtaking landscapes, and create unforgettable experiences.Embrace the adventure, discover new places, and connect with people from all walks of life. The world is full of wonders waiting to be explored.</p>
                     </div>
                 </Col>
