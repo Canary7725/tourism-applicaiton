@@ -50,13 +50,11 @@ jobs:
               -e MONGO_INITDB_ROOT_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
               mongo:6.0
 
-            echo "Creating .env for backend dynamically"
-            echo "${{ secrets.ENV_FILE_CONTENTS }}" > ./backend/.env
-
-
-            echo "Running backend container..."
+            echo "Running backend container without .env file..."
             docker run -d --name backend -p 4000:4000 --network app-network \
-              --env-file ./backend/.env \
+              -e MONGO_URI=${{ secrets.MONGO_URI }} \
+              -e MONGO_USER=${{ secrets.MONGO_USER }} \
+              -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
               ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
 
             echo "Running frontend container..."
