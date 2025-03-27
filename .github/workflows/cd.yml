@@ -1,4 +1,5 @@
 name: Continuous Deployment (CD)
+
 on:
   workflow_run:
     workflows: ["Continuous Integration (CI)"]
@@ -26,25 +27,37 @@ jobs:
 
             echo "Ensuring Docker network exists..."
             docker network inspect app-network >/dev/null 2>&1 || docker network create app-network
-            
-            echo "Stopping old containers..."
-            docker stop backend frontend || true
-            docker rm backend frontend || true
 
-            echo "Removing old images"
+            echo "Stopping old containers..."
+            docker stop backend frontend mongo || true
+            docker rm backend frontend mongo || true
+
+            echo "Removing old images..."
             docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest || true
             docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest || true
+            docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/mongo:latest || true
 
-            echo "Pulling latest images..."
+            echo "Pulling latest images from DockerHub..."
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mongo:latest
 
-            echo "Deploying using Docker Compose..."
-            cd $GITHUB_WORKSPACE
+            echo "Running Mongo container..."
+            docker run -d --name mongo -p 27017:27017 --network app-network -v mongo-data:/data/db \
+              -e MONGO_INITDB_ROOT_USERNAME=${{ secrets.MONGO_USER }} \
+              -e MONGO_INITDB_ROOT_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
+              ${{ secrets.DOCKERHUB_USERNAME }}/mongo:latest
 
-            echo "Running containers"
-            docker-compose down
-            docker-compose up -d
+            echo "Running backend container..."
+            docker run -d --name backend -p 4000:4000 --network app-network \
+              -e MONGO_URI=${{ secrets.MONGO_URI }} \
+              -e MONGO_USER=${{ secrets.MONGO_USER }} \
+              -e MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
+              --env-file ./backend/.env ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
 
-            echo "Deployment completed. Running containers:"
+            echo "Running frontend container..."
+            docker run -d --name frontend -p 3000:3000 --network app-network \
+              --env-file ./frontend/.env ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
+
+            echo "Verifying running containers..."
             docker ps -a
