@@ -84,6 +84,7 @@ This repository showcases the implementation of a CI/CD pipeline using GitHub Ac
 |   |-- setup.sh  # Bash script for setting up Docker and Nginx
 |   |-- docker-compose.yml
 |
+|-- pictures
 |-- README.md  # Documentation
 ```
 
