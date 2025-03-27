@@ -1,0 +1,50 @@
+name: Continuous Deployment (CD)
+on:
+  workflow_run:
+    workflows: ["Continuous Integration (CI)"]
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH and Deploy
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.AWS_EC2_HOST }}
+          username: ${{ secrets.AWS_EC2_USER }}
+          key: ${{ secrets.AWS_SSH_PRIVATE_KEY }}
+          script: |
+            echo "Logging into DockerHub..."
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+
+            echo "Ensuring Docker network exists..."
+            docker network inspect app-network >/dev/null 2>&1 || docker network create app-network
+            
+            echo "Stopping old containers..."
+            docker stop backend frontend || true
+            docker rm backend frontend || true
+
+            echo "Removing old images..."
+            docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest || true
+            docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest || true
+
+            echo "Pulling latest images from DockerHub..."
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
+            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
+
+
+            echo "Running backend container..."
+            docker run -d --name backend -p 4000:4000 --network app-network ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
+
+            echo "Running frontend container..."
+            docker run -d --name frontend -p 3000:3000 --network app-network ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
+            
+            echo "Verifying running containers..."
+            docker ps -a
