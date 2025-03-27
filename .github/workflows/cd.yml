@@ -42,8 +42,9 @@ jobs:
             echo "Deploying using Docker Compose..."
             cd /var/www/html/tourism-application
 
+            echo "Running containers now"
             docker-compose down
-            docker-compose up -d --build
+            docker-compose up -d
 
             echo "Deployment completed. Running containers:"
             docker ps -a
