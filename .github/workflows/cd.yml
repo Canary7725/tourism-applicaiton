@@ -35,18 +35,20 @@ jobs:
             echo "Removing old images..."
             docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest || true
             docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest || true
-            docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/mongo:latest || true
 
             echo "Pulling latest images from DockerHub..."
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
-            docker pull ${{ secrets.DOCKERHUB_USERNAME }}/mongo:latest
+
+            # Pull the official MongoDB image from DockerHub
+            echo "Pulling official MongoDB image..."
+            docker pull mongo:6.0
 
             echo "Running Mongo container..."
             docker run -d --name mongo -p 27017:27017 --network app-network -v mongo-data:/data/db \
               -e MONGO_INITDB_ROOT_USERNAME=${{ secrets.MONGO_USER }} \
               -e MONGO_INITDB_ROOT_PASSWORD=${{ secrets.MONGO_PASSWORD }} \
-              ${{ secrets.DOCKERHUB_USERNAME }}/mongo:latest
+              mongo:6.0
 
             echo "Running backend container..."
             docker run -d --name backend -p 4000:4000 --network app-network \
