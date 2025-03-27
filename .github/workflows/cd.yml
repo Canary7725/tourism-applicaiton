@@ -40,7 +40,7 @@ jobs:
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
 
             echo "Deploying using Docker Compose..."
-            cd /var/www/html/tourism-application
+            cd /home/runner/work/tourism-applicaiton
 
             echo "Running containers now"
             docker-compose down
