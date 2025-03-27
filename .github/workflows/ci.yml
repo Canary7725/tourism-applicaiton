@@ -26,10 +26,14 @@ jobs:
       - name: Login to DockerHub
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Build and Push Images
+      - name: Build Docker images
         run: |
           docker-compose build
-          docker tag backend ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
-          docker tag frontend ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
+
+      - name: Push Backend Image to DockerHub
+        run: |
+          docker-compose push backend
+
+      - name: Push Frontend Image to DockerHub
+        run: |
+          docker-compose push frontend
