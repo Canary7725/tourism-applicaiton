@@ -31,7 +31,7 @@ jobs:
             docker stop backend frontend || true
             docker rm backend frontend || true
 
-            echo "Removing old images..."
+            echo "Removing old images"
             docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest || true
             docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest || true
 
