@@ -1,5 +1,4 @@
 name: Continuous Deployment (CD)
-
 on:
   workflow_run:
     workflows: ["Continuous Integration (CI)"]
@@ -12,6 +11,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
       - name: Set up SSH and Deploy
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -22,12 +24,23 @@ jobs:
             echo "Logging into DockerHub..."
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
+            echo "Ensuring Docker network exists..."
+            docker network inspect app-network >/dev/null 2>&1 || docker network create app-network
+            
+            echo "Stopping old containers..."
+            docker stop backend frontend || true
+            docker rm backend frontend || true
+
+            echo "Removing old images"
+            docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest || true
+            docker image rm ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest || true
+
             echo "Pulling latest images..."
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/backend:latest
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
 
             echo "Deploying using Docker Compose..."
-            cd /var/www/html/tourism-application  # Change this to your actual project directory
+            cd /var/www/html/tourism-application
 
             docker-compose down
             docker-compose up -d --build
