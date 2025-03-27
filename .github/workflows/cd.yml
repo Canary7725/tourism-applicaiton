@@ -40,9 +40,10 @@ jobs:
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/frontend:latest
 
             echo "Deploying using Docker Compose..."
-            cd /home/runner/work/tourism-applicaiton
+            cd /home/runner/work/tourism-application/tourism-application/
 
-            echo "Running containers now"
+
+            echo "Running containers"
             docker-compose down
             docker-compose up -d
 
