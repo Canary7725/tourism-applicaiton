@@ -16,6 +16,10 @@ This repository showcases the implementation of a CI/CD pipeline using GitHub Ac
 2. **Create Key Pair**: Generated SSH keys and configured authentication.
 3. **Clone MERN Project**: Cloned the application inside `/var/www/html/`.
 4. **Run Setup Script**: Executed a Bash script to install Docker and Nginx.
+
+```bash
+   bash ./script/setup.sh
+```
 5. **Configure Nginx**:
    - Created an Nginx config file in `/etc/nginx/sites-enabled/`
    - Configured proxying requests from port `80` to `3000`
